@@ -5,6 +5,7 @@ from random import randint
 
 client = MongoClient("mongodb://localhost:27017")
 db = client.log_db
+admins = []
 
 def create_names(fake):
     for x in range(10000):
@@ -14,23 +15,21 @@ def create_names(fake):
         genJob = fake.job()
         genCountry = fake.country()
         longitude, latitude, city, abbr, continent = fake.location_on_land()
-        result = db.admin.insert_one(
-            {
-                'email': genEmail,
-                'name': genName,
-                'surname': genSurname,
-                'job': genJob,
-                'location': {
-                        'longitute': float(longitude),
-                        'latitude': float(latitude),
-                        'city': city,
-                        'country': genCountry
-                    },
-                }
-            )
-
-        # print('id: ' + str(result.inserted_id) + ' name: ' + genName)
-        #time.sleep(1)
+        admins.append({
+            'email': genEmail,
+            'name': genName,
+            'surname': genSurname,
+            'job': genJob,
+            'location': {
+                    'longitute': float(longitude),
+                    'latitude': float(latitude),
+                    'city': city,
+                    'country': genCountry
+                },
+            }
+        )
+        
+    db.admin.insert_many(admins)
 
 if __name__ == '__main__':
     fake = Factory.create()

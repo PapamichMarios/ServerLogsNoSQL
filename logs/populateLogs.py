@@ -5,6 +5,7 @@ from pymongo import MongoClient
 
 client = MongoClient("mongodb://localhost:27017")
 db = client.log_db
+batchSize = 500000
 
 def monthToNum(shortMonth):
     return {
@@ -28,6 +29,7 @@ def main():
     # parse access.log
     f = open("access.log", "r")
     lines = f.readlines()
+    logs = []
 
     for line in lines: 
         words = line.split()
@@ -42,7 +44,6 @@ def main():
         if len(method) >= 10:
             continue
 
-
         log = {}
         log['type'] = "access"
         log['log_timestamp'] = datetime.datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S")
@@ -56,15 +57,21 @@ def main():
         if words[10][1:-1]  != '-'  : log['referer'] = words[10][1:-1]
         if agent            != '-'  : log['agent_string'] = agent
 
-        result = db.log.insert_one(log)
+        logs.append(log)
+
+        if(len(logs) == batchSize):
+            db.log.insert_many(logs)
+            logs = []
         # print('id: ' + str(result.inserted_id))
         # time.sleep(5)
 
     f.close()
+    if len(logs) > 0: db.log.insert_many(logs)
     
     #parse HDFS_DataXceiver.log
     f = open("HDFS_DataXceiver.log", "r")
     lines = f.readlines()
+    logs = []
 
     for line in lines:
         words = line.split()
@@ -99,13 +106,18 @@ def main():
             log['blocks'].append(words[8])
             log['destinations'].append(words[10][1:])
 
-        result = db.log.insert_one(log)
+        logs.append(log)
+        if(len(logs) == batchSize):
+            db.log.insert_many(logs)
+            logs = []
 
     f.close()
+    if len(logs) > 0: db.log.insert_many(logs)
 
     # HDFS_FS_Namesystem.log
     f = open("HDFS_FS_Namesystem.log", "r")
     lines = f.readlines()
+    logs = []
 
     for line in lines:
         words = line.split()
@@ -134,9 +146,13 @@ def main():
             for block in words[10:]:
                 log['blocks'].append(block)
 
-        result = db.log.insert_one(log)
+        logs.append(log)
+        if(len(logs) == batchSize):
+            db.log.insert_many(logs)
+            logs = []
 
     f.close()
+    if len(logs) > 0: db.log.insert_many(logs)
 
 if __name__ == "__main__":
     main()
