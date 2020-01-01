@@ -12,22 +12,12 @@ def create_names(fake):
         genEmail = fake.email()
         genName = fake.first_name()
         genSurname = fake.last_name()
-        genJob = fake.job()
-        genCountry = fake.country()
-        longitude, latitude, city, abbr, continent = fake.location_on_land()
+        genPhone = fake.phone_number()
         admins.append({
             'email': genEmail,
-            'name': genName,
-            'surname': genSurname,
-            'job': genJob,
-            'location': {
-                    'longitute': float(longitude),
-                    'latitude': float(latitude),
-                    'city': city,
-                    'country': genCountry
-                },
-            }
-        )
+            'username': genName + '_' + genSurname,
+            'phone': genPhone
+        })
         
     db.admin.insert_many(admins)
 
