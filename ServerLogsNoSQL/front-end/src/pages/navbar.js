@@ -2,7 +2,7 @@ import React from 'react';
 
 import { NavLink, withRouter } from "react-router-dom";
 import { Navbar, Nav, NavItem, Button } from 'react-bootstrap';
-import { FaHome } from 'react-icons/fa';
+import { FaHome, FaPlus } from 'react-icons/fa';
 
 class NavBar extends React.Component {
 
@@ -11,43 +11,35 @@ class NavBar extends React.Component {
         // for the left part of the navbar
         let navLeft = (
             <Nav className="mr-auto">
-                {/* <NavItem className="button-margin-left">
-                <Link to="/procedure1">
-                    <Button title="Procedure 1" variant="dark" style={{borderRadius: '12px'}}>
-                        <b>Procedure 1</b>
-                    </Button>
-                </Link>
+                <NavItem className="button-margin-left">
+                    <NavLink to="/api-methods">
+                        <Button title="API Methods" variant="dark" style={{borderRadius: '12px'}}>
+                            <b>API Methods</b>
+                        </Button>
+                    </NavLink>
                 </NavItem>
 
                 <NavItem className="button-margin-left">
-                <Link to="/procedure2">
-                    <Button title="Procedure 2" variant="dark" style={{borderRadius: '12px'}}>
-                        <b>Procedure 2</b>
-                    </Button>
-                </Link>
+                    <NavLink to="/cast-upvote">
+                        <Button title="Cast Upvote" variant="dark" style={{borderRadius: '12px'}}>
+                            <b>Cast Upvote</b>
+                        </Button>
+                    </NavLink>
                 </NavItem>
-
-                <NavItem className="button-margin-left">
-                <Link to="/procedure3">
-                    <Button title="Procedure 3" variant="dark" style={{borderRadius: '12px'}}>
-                        <b>Procedure 3</b>
-                    </Button>
-                </Link>
-                </NavItem>
-
-                <NavItem className="button-margin-left">
-                <Link to="/search-ip">
-                    <Button title="Search IP" variant="dark" style={{borderRadius: '12px'}}>
-                        <b>Search IP</b>
-                    </Button>
-                </Link>
-                </NavItem> */}
             </Nav>
         );
 
         // for the right part of the navbar
         let navRight = (
             <Nav className="justify-content-end">
+                <NavItem className="button-margin">
+                    <NavLink to="/insert-log">
+                        <Button title="Insert Log" variant="dark" style={{borderRadius: '12px'}}>
+                            <FaPlus style={{verticalAlign: 'baseline'}} />
+                        </Button>
+                    </NavLink>
+                </NavItem>
+
                 <NavItem className="button-margin">
                     <NavLink to="/home">
                         <Button title="Home" variant="dark" style={{borderRadius: '12px'}}>
