@@ -23,6 +23,7 @@ class App extends React.Component {
                   <Route exact path="/home"               component={Home} />
 
                   <Route exact path="/api-methods"        component={ApiMethods} />
+                  
                   {/* <Route exact path="/insert-log"         render={ () => isAuthenticated() ? <Insert />       : <Redirect to="/unauthorized" /> } /> */}
 
                   <Route exact path="/unauthorized"       component={Page401} />
