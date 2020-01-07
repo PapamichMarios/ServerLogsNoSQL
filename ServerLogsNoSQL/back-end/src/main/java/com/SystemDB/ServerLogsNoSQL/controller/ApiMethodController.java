@@ -26,11 +26,11 @@ public class ApiMethodController {
     @Autowired
     private ApiMethodService apiMethodService;
 
-    @GetMapping(value = "/1")
-    public ResponseEntity<?> getMethod1(@RequestParam("from") @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
+    @GetMapping(value = "/2")
+    public ResponseEntity<?> getMethod2(@RequestParam("from") @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
                                         @RequestParam("to")   @DateTimeFormat(pattern="yyyy-MM-dd") Date to,
                                         @RequestParam("type") String type) {
 
-        return this.apiMethodService.getMethod1(from, to, type);
+        return this.apiMethodService.getMethod2(from, to, type);
     }
 }

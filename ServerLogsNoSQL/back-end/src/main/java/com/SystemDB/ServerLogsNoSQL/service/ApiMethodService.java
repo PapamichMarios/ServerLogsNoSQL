@@ -22,7 +22,7 @@ public class ApiMethodService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public ResponseEntity<?> getMethod1(Date from, Date to, String type) {
+    public ResponseEntity<?> getMethod2(Date from, Date to, String type) {
 
         MatchOperation matchOperation = Aggregation.match(new Criteria("type").is(type).and("log_timestamp").gte(from).lte(to));
         ProjectionOperation projectionOperation = Aggregation.project()
@@ -36,4 +36,5 @@ public class ApiMethodService {
 
         return ResponseEntity.ok(resultList);
     }
+
 }
