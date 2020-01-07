@@ -1,14 +1,14 @@
 package com.SystemDB.ServerLogsNoSQL.response;
 
-public class Method1 {
+public class Method2 {
 
     private String id;
     private int requests;
 
-    public Method1() {
+    public Method2() {
     }
 
-    public Method1(String id, int requests) {
+    public Method2(String id, int requests) {
         this.id = id;
         this.requests = requests;
     }

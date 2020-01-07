@@ -33,4 +33,11 @@ public class ApiMethodController {
 
         return this.apiMethodService.getMethod2(from, to, type);
     }
+
+    @GetMapping(value = "/4")
+    public ResponseEntity<?> getMethod4(@RequestParam("from") @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
+                                        @RequestParam("to")   @DateTimeFormat(pattern="yyyy-MM-dd") Date to) {
+
+        return this.apiMethodService.getMethod4(from, to);
+    }
 }

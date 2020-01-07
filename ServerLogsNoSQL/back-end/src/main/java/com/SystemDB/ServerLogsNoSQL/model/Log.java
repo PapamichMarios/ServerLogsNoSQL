@@ -2,6 +2,7 @@ package com.SystemDB.ServerLogsNoSQL.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,19 +15,24 @@ public class Log {
 
     private String resource;
 
-    private String source_ip;
+    @Field("source_ip")
+    private String sourceIp;
 
-    private String http_method;
+    @Field("http_method")
+    private String httpMethod;
 
     private String type;
 
-    private String agent_string;
+    @Field("agent_string")
+    private String agentString;
 
     private int size;
 
-    private int http_response;
+    @Field("http_response")
+    private int httpResponse;
 
-    private Date log_timestamp;
+    @Field("log_timestamp")
+    private Date logTimestamp;
 
     private List<String> blocks = new ArrayList<>();
 
@@ -39,13 +45,13 @@ public class Log {
     public Log(String id, String resource, String source_ip, String http_method, String type, String agent_string, int size, int http_response, Date log_timestamp, List<String> blocks, List<String> destinations) {
         this.id = id;
         this.resource = resource;
-        this.source_ip = source_ip;
-        this.http_method = http_method;
+        this.sourceIp = source_ip;
+        this.httpMethod = http_method;
         this.type = type;
-        this.agent_string = agent_string;
+        this.agentString = agent_string;
         this.size = size;
-        this.http_response = http_response;
-        this.log_timestamp = log_timestamp;
+        this.httpResponse = http_response;
+        this.logTimestamp = log_timestamp;
         this.blocks = blocks;
         this.destinations = destinations;
     }
@@ -67,19 +73,19 @@ public class Log {
     }
 
     public String getSource_ip() {
-        return source_ip;
+        return sourceIp;
     }
 
     public void setSource_ip(String source_ip) {
-        this.source_ip = source_ip;
+        this.sourceIp = source_ip;
     }
 
     public String getHttp_method() {
-        return http_method;
+        return httpMethod;
     }
 
     public void setHttp_method(String http_method) {
-        this.http_method = http_method;
+        this.httpMethod = http_method;
     }
 
     public String getType() {
@@ -91,11 +97,11 @@ public class Log {
     }
 
     public String getAgent_string() {
-        return agent_string;
+        return agentString;
     }
 
     public void setAgent_string(String agent_string) {
-        this.agent_string = agent_string;
+        this.agentString = agent_string;
     }
 
     public int getSize() {
@@ -107,19 +113,19 @@ public class Log {
     }
 
     public int getHttp_response() {
-        return http_response;
+        return httpResponse;
     }
 
     public void setHttp_response(int http_response) {
-        this.http_response = http_response;
+        this.httpResponse = http_response;
     }
 
     public Date getLog_timestamp() {
-        return log_timestamp;
+        return logTimestamp;
     }
 
     public void setLog_timestamp(Date log_timestamp) {
-        this.log_timestamp = log_timestamp;
+        this.logTimestamp = log_timestamp;
     }
 
     public List<String> getBlocks() {
