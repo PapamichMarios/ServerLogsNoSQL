@@ -102,6 +102,20 @@ db.log.aggregate([
 }])
 ---------Method 7 ---------
 ---------Method 8 ---------
+db.admin.aggregate([
+{
+    $project: {
+        upvotes: {
+            $size: "$upvotes"
+        }
+    }
+}, {
+    $sort: {
+        upvotes: -1
+    }
+}, {
+    $limit: 50
+}])
 ---------Method 9 ---------
 ---------Method 10 ---------
 ---------Method 11 ---------
