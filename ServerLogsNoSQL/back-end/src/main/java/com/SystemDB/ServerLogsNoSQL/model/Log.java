@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,16 +12,19 @@ import java.util.List;
 @Document(collection="log")
 public class Log {
 
-    @Id private String id;
+    @Id
+    private String id;
 
     private String resource;
 
     @Field("source_ip")
+    @NotNull
     private String sourceIp;
 
     @Field("http_method")
     private String httpMethod;
 
+    @NotNull
     private String type;
 
     @Field("agent_string")
@@ -32,6 +36,7 @@ public class Log {
     private int httpResponse;
 
     @Field("log_timestamp")
+    @NotNull
     private Date logTimestamp;
 
     private List<String> blocks = new ArrayList<>();
