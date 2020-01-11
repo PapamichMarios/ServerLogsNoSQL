@@ -1,0 +1,2 @@
+FLASK_APP=ServerLogsNoSQL
+FLASK_ENV=development

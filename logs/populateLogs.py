@@ -91,6 +91,7 @@ def main():
             log['size'] = int(words[14])
             log['blocks'].append(words[7])
             log['destinations'].append(words[11][1:])
+            logs.append(log)
 
         elif (words[5] == "Receiving"):
 
@@ -98,6 +99,7 @@ def main():
             log['source_ip'] = words[9][1:]
             log['blocks'].append(words[7])
             log['destinations'].append(words[11][1:])
+            logs.append(log)
 
         elif (words[6] == "Served"):
 
@@ -105,8 +107,8 @@ def main():
             log['source_ip'] = words[5]
             log['blocks'].append(words[8])
             log['destinations'].append(words[10][1:])
+            logs.append(log)
 
-        logs.append(log)
         if(len(logs) == batchSize):
             db.log.insert_many(logs)
             logs = []
@@ -137,6 +139,8 @@ def main():
             log['destinations'] = []
             for dest in words[13:]:
                 log['destinations'].append(dest)
+            
+            logs.append(log)
 
         elif (words[9] == "delete"):
             
@@ -145,8 +149,9 @@ def main():
 
             for block in words[10:]:
                 log['blocks'].append(block)
+            
+            logs.append(log)
 
-        logs.append(log)
         if(len(logs) == batchSize):
             db.log.insert_many(logs)
             logs = []
