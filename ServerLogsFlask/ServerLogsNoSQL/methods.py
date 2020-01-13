@@ -25,8 +25,7 @@ def getMethod2():
     if not dayFrom or not dayTo or not logType:
         return 'Your url is not valid'
 
-    logCollection = mongo.db.log
-    result = logCollection.aggregate([
+    result = mongo.db.log.aggregate([
         {
             '$match': {
                 'type': logType, 
@@ -70,8 +69,7 @@ def getMethod4():
     if not dayFrom or not dayTo:
         return 'Your url is not valid'
 
-    logCollection = mongo.db.log
-    result = logCollection.aggregate([
+    result = mongo.db.log.aggregate([
         {
             '$match': {
                 'log_timestamp': {
@@ -104,8 +102,7 @@ def getMethod5():
 @methods.route('/method6', methods=['GET'])
 def getMethod6():
     
-    logCollection = mongo.db.log
-    result = logCollection.aggregate([
+    result = mongo.db.log.aggregate([
         {
             '$match': {
                 '$or': [
@@ -166,8 +163,7 @@ def getMethod7():
 @methods.route('/method8', methods=['GET'])
 def getMethod8():
     
-    logCollection = mongo.db.admin
-    result = logCollection.aggregate([
+    result = mongo.db.admin.aggregate([
         {
             '$project': {
                 'upvotes': {
@@ -194,7 +190,39 @@ def getMethod9():
 @methods.route('/method10', methods=['GET'])
 def getMethod10():
     
-    return 'Marios'
+    result = mongo.db.admin.aggregate([
+        {
+            '$group': {
+                '_id': '$email', 
+                'upvotes': {
+                    '$push': '$upvotes'
+                }, 
+                'total': {
+                    '$sum': 1
+                }
+            }
+        }, {
+            '$match': {
+                'total': {
+                    '$gt': 2
+                }
+            }
+        }, {
+            '$unwind': {
+                'path': '$upvotes'
+            }
+        }, {
+            '$unwind': {
+                'path': '$upvotes'
+            }
+        }, {
+            '$group': {
+                '_id': '$upvotes'
+            }
+        }
+    ], allowDiskUse=True)
+
+    return dumps(result)
 
 @methods.route('/method11', methods=['GET'])
 def getMethod11():
