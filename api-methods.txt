@@ -53,6 +53,35 @@ db.log.aggregate([
 }])
 
 ---------Method 5 ---------
+
+logCollection.aggregate([
+    {
+        '$group': {
+            '_id': '$referer',
+            'count': {
+                '$sum': 1
+            },
+            'resources': {
+                '$addToSet': '$resource'
+            }
+        }
+    }, {
+        '$project': {
+            'referer': '$_id',
+            '_id': 0,
+            'size': {
+                '$size': '$resources'
+            }
+        }
+    }, {
+        '$match': {
+            'size': {
+                '$gt': 1
+            }
+        }
+    }
+])
+
 ---------Method 6 ---------
 db.log.aggregate([
 {
