@@ -86,6 +86,9 @@ def getMethod2():
 
 @methods.route('/method3', methods=['GET'])
 def getMethod3():
+    day = request.args.get('day')
+    day = datetime.strptime(day, '%Y-%m-%d')
+    day = day.strftime("%Y-%m-%d")
     result = mongo.db.log.aggregate(
         [
             {
@@ -101,7 +104,7 @@ def getMethod3():
                 }
             }, {
             '$match': {
-                'day': '2008-11-18'
+                'day': day
             }
         }, {
             '$group': {
@@ -111,27 +114,25 @@ def getMethod3():
                 }
             }
         }, {
-            '$project':{
+            '$project': {
                 '_id': '$_id.source_ip',
-                'typeAndCount': {'type':'$_id.type','count':'$count' }
+                'type': '$_id.type',
+                'count': '$count' }
+
+        }, {
+            '$sort':{
+                '_id':-1,
+                'count':-1
             }
         }, {
             '$group': {
                 '_id': '$_id',
-                'typesAndCounts': {
-                    '$addToSet':'$typeAndCount'}
-                }
-        }, {
-            '$unwind':'$typesAndCounts'
-        }, {
-            '$sort':{ 'typesAndCounts.count':-1 }
-        }, {
-            '$group': {
-                '_id':'$_id',
-                'most_common': {
-                    '$addToSet': '$typesAndCounts'
+                'counts': {
+                    '$push': {'count':'$count', 'type':'$type'}
                 }
             }
+        },{
+            '$project':{'counts':{ '$slice':['$counts',3]}}
         }
 
         ], allowDiskUse=True
@@ -410,45 +411,14 @@ def getMethod10():
     ], allowDiskUse=True)
 
     return '<pre>' + dumps(result, indent=2) + '</pre>'
-'''
+
 @methods.route('/method11', methods=['GET'])
 def getMethod11():
-    result = mongo.db.log.aggregate([
+    username = request.args.get('name')
+    result = mongo.db.admin.aggregate([
         {
             '$match': {
-                'blocks': {
-                    '$ne': null
-                }
-            }
-        },
-        {
-            '$lookup': {
-                'from': 'admin',
-                'let':{'log_id':'$log._id'},
-                'pipeline': [ {
-                                '$match': {
-                                            '$expr': {
-                                                        '$and':[ {'$in':['$$log_id','$upvotes'] },
-                                                                 {'$eq' : ['$username','Brittany_Stevens'] }
-                                                         ]
-                                            } }
-                                }
-                ],
-                'as': 'string'
-            }
-        }
-        ,{
-            '$match': {
-                'string': {
-                    '$ne': []
-                }
-            }
-        }])
-
-    mongo.db.admin.aggregate([
-        {
-            '$match': {
-                'username': 'Brittany_Stevens'
+                'username': username
             }
         },
         {
@@ -469,8 +439,14 @@ def getMethod11():
         },{
             '$match': {
                 'string.blocks': {
-                    '$ne': null
+                    '$ne': None
                 }
             }
+        },{
+            '$project':{
+                "_id":0,
+                'blocks':'$string.blocks'
+            }
         }])
-'''
+
+    return '<pre>' + dumps(result, indent=2) + '</pre>'
