@@ -3,6 +3,7 @@ from .extensions import mongo
 from flask import jsonify
 from datetime import datetime, tzinfo, timezone
 from bson.json_util import dumps
+from bson.objectid import ObjectId
 
 from .logUtils import checkAccessLogEssential, checkDataLogEssential, checkLogEssential, checkDeleteLogEssential
 
@@ -126,3 +127,34 @@ def insertDelete():
 
     mongo.db.log.insert(log)
     return '<h1>Delete Log Inserted</h1>'
+
+
+@insert.route('/insert/upvote', methods=['POST'])
+def insertUpvote():
+    data = request.json
+
+    # check for errors
+    '''
+    if not checkLogEssential(data): return '<h1>Not Accepted Log</h1>'
+    if not checkDeleteLogEssential(data): return '<h1>Not Accepted Delete Log</h1>'
+    '''
+
+    log = {}
+    log['log_code'] = data['log_code']
+    log['admin_code'] = data['admin_code']
+    print(log['log_code'],log['admin_code'])
+    results=mongo.db.admin.find({  '_id': ObjectId(log['admin_code']) ,
+                         'upvotes': { '$elemMatch':
+                                                { '$eq': ObjectId(log['log_code'])}
+                                    }
+                        }
+                      )
+    if len(list(results)):
+        return '<h1>Upvote exists</h1>'
+    else:
+        upvote=mongo.db.admin.update(
+            {"_id": ObjectId(log['admin_code'])},
+            { '$push': {"upvotes" : ObjectId(log['log_code'])} }
+        )
+        return '<h1>Upvote Casted</h1>'
+

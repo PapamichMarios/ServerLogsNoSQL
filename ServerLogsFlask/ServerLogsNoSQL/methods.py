@@ -82,12 +82,11 @@ def getMethod2():
         }
     ])
 
-    return dumps(result)
+    return '<pre>' + dumps(result,indent=2) + '</pre>'
 
 @methods.route('/method3', methods=['GET'])
 def getMethod3():
-    logCollection = mongo.db.log
-    result = logCollection.aggregate(
+    result = mongo.db.log.aggregate(
         [
             {
                 '$project': {
@@ -111,7 +110,30 @@ def getMethod3():
                     '$sum': 1
                 }
             }
+        }, {
+            '$project':{
+                '_id': '$_id.source_ip',
+                'typeAndCount': {'type':'$_id.type','count':'$count' }
+            }
+        }, {
+            '$group': {
+                '_id': '$_id',
+                'typesAndCounts': {
+                    '$addToSet':'$typeAndCount'}
+                }
+        }, {
+            '$unwind':'$typesAndCounts'
+        }, {
+            '$sort':{ 'typesAndCounts.count':-1 }
+        }, {
+            '$group': {
+                '_id':'$_id',
+                'most_common': {
+                    '$addToSet': '$typesAndCounts'
+                }
+            }
         }
+
         ], allowDiskUse=True
     )
 
@@ -151,7 +173,7 @@ def getMethod4():
         }
     ])
 
-    return dumps(result)
+    return '<pre>' + dumps(result,indent=2) + '</pre>'
 
 @methods.route('/method5', methods=['GET'])
 def getMethod5():
@@ -239,25 +261,58 @@ def getMethod6():
         }
     ])
 
-    return dumps(result)
+    return '<pre>' + dumps(result,indent=2) + '</pre>'
 
 
 @methods.route('/method7', methods=['GET'])
 def getMethod7():
-    logCollection = mongo.db.admin
-    result = logCollection.aggregate([
+    day = request.args.get('day')
+    day = datetime.strptime(day, '%Y-%m-%d')
+    day = day.strftime("%Y-%m-%d")
+    result = mongo.db.admin.aggregate([
         {
             '$unwind': {
                 'path': '$upvotes'
             }
         }, {
-        '$lookup': {
-            'from': 'log',
-            'localField': 'upvotes',
-            'foreignField': '_id',
-            'as': 'string'
+            '$lookup': {
+                'from': 'log',
+                'localField': 'upvotes',
+                'foreignField': '_id',
+                'as': 'string'
+            }
+        },{
+            '$unwind': {
+                'path': '$string'
+            }
+        },{
+                '$project': {
+
+                    'day': {
+                        '$dateToString': {
+                            'format': '%Y-%m-%d',
+                            'date': '$string.log_timestamp'
+                        }
+                    },
+                    'upvote':'$string._id',
+                    'source_ip': '$string.source_ip',
+                }
+            }, {
+            '$match': {
+                'day': day
+            }
+        },{
+            "$group": {
+            "_id": "$upvote",
+            "count": { "$sum": 1 }
+            }
+        }, {
+            '$sort': {
+                'count': -1
+            }
+        }, {
+            '$limit': 50
         }
-    }
     ])
 
     return '<pre>' + dumps(result, indent=2) + '</pre>'
@@ -281,13 +336,43 @@ def getMethod8():
         }
     ])
 
-    return dumps(result)
+    return '<pre>' + dumps(result, indent=2) + '</pre>'
 
 
 @methods.route('/method9', methods=['GET'])
 def getMethod9():
-    
-    return 'Joey'
+    result = mongo.db.admin.aggregate([
+        {
+            '$unwind': {
+                'path': '$upvotes'
+            }
+        }, {
+            '$lookup': {
+                'from': 'log',
+                'localField': 'upvotes',
+                'foreignField': '_id',
+                'as': 'string'
+            }
+        },{
+            "$group": {
+            "_id": "$_id",
+            "distinct_ips": { "$addToSet": "$string.source_ip" }
+            }
+        },{
+            '$project': {
+            'total_ips': {
+                    '$size': '$distinct_ips'
+                }
+            }
+        }, {
+            '$sort': {
+                'total_ips': -1
+            }
+        }, {
+            '$limit': 50
+        }
+    ])
+    return '<pre>' + dumps(result,indent=2) + '</pre>'
 
 @methods.route('/method10', methods=['GET'])
 def getMethod10():
@@ -324,9 +409,68 @@ def getMethod10():
         }
     ], allowDiskUse=True)
 
-    return dumps(result)
-
+    return '<pre>' + dumps(result, indent=2) + '</pre>'
+'''
 @methods.route('/method11', methods=['GET'])
 def getMethod11():
-    
-    return 'Joey'
+    result = mongo.db.log.aggregate([
+        {
+            '$match': {
+                'blocks': {
+                    '$ne': null
+                }
+            }
+        },
+        {
+            '$lookup': {
+                'from': 'admin',
+                'let':{'log_id':'$log._id'},
+                'pipeline': [ {
+                                '$match': {
+                                            '$expr': {
+                                                        '$and':[ {'$in':['$$log_id','$upvotes'] },
+                                                                 {'$eq' : ['$username','Brittany_Stevens'] }
+                                                         ]
+                                            } }
+                                }
+                ],
+                'as': 'string'
+            }
+        }
+        ,{
+            '$match': {
+                'string': {
+                    '$ne': []
+                }
+            }
+        }])
+
+    mongo.db.admin.aggregate([
+        {
+            '$match': {
+                'username': 'Brittany_Stevens'
+            }
+        },
+        {
+            '$unwind': {
+                'path': '$upvotes'
+            }
+        }, {
+            '$lookup': {
+                'from': 'log',
+                'localField': 'upvotes',
+                'foreignField': '_id',
+                'as': 'string'
+            }
+        }, {
+            '$unwind': {
+                'path': '$string'
+            }
+        },{
+            '$match': {
+                'string.blocks': {
+                    '$ne': null
+                }
+            }
+        }])
+'''
