@@ -133,22 +133,18 @@ def insertDelete():
 def insertUpvote():
     data = request.json
 
-    # check for errors
-    '''
-    if not checkLogEssential(data): return '<h1>Not Accepted Log</h1>'
-    if not checkDeleteLogEssential(data): return '<h1>Not Accepted Delete Log</h1>'
-    '''
-
     log = {}
     log['log_code'] = data['log_code']
     log['admin_code'] = data['admin_code']
     print(log['log_code'],log['admin_code'])
-    results=mongo.db.admin.find({  '_id': ObjectId(log['admin_code']) ,
-                         'upvotes': { '$elemMatch':
-                                                { '$eq': ObjectId(log['log_code'])}
-                                    }
-                        }
-                      )
+    results = mongo.db.admin.find({
+        '_id': ObjectId(log['admin_code']) ,
+        'upvotes': { 
+            '$elemMatch': { '$eq': ObjectId(log['log_code'])}
+        }
+    })
+
+    # check if has already upvoted
     if len(list(results)):
         return '<h1>Upvote exists</h1>'
     else:

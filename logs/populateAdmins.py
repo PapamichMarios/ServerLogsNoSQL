@@ -9,7 +9,7 @@ db = client.log_db
 admins = []
 
 def create_names(fake):
-    for x in range(1000):    #insert admins number
+    for x in range(3000):    #insert admins number
         genEmail = fake.email()
         genName = fake.first_name()
         genSurname = fake.last_name()

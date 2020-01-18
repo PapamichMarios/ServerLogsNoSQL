@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from .extensions import mongo
 from flask import jsonify
-from datetime import datetime, tzinfo, timezone
+from datetime import datetime, tzinfo, timezone, timedelta
 from bson.json_util import dumps
 
 methods = Blueprint('methods', __name__)
@@ -10,16 +10,22 @@ methods = Blueprint('methods', __name__)
 def index():
     return '<h1>Welcome</h1>'
 
+
+"""
+1. Find the total logs per type that were created within a specified time range and sort them in
+a descending order. Please note that individual files may log actions of more than one type.
+"""
 @methods.route('/method1', methods=['GET'])
 def getMethod1():
+
+    # get query params
     dayFrom = request.args.get('from')
     dayTo = request.args.get('to')
 
     if not dayFrom or not dayTo:
         return 'Your url is not valid'
-
-    logCollection = mongo.db.log
-    result = logCollection.aggregate([
+ 
+    result = mongo.db.log.aggregate([
         {
             '$match': {
                 'log_timestamp': {
@@ -28,21 +34,24 @@ def getMethod1():
                 }
             }
         }, {
-        '$group': {
-            '_id': '$type',
-            'total_logs': {
-                '$sum': 1
+            '$group': {
+                '_id': '$type',
+                'total_logs': {
+                    '$sum': 1
+                }
+            }
+        }, {
+            '$sort': {
+                'total_logs': -1
             }
         }
-    }, {
-        '$sort': {
-            'total_logs': -1
-        }
-    }
     ])
 
-    return '<pre>' + dumps(result,indent=2) + '</pre>'
+    return dumps(result)
     
+"""
+2. Find the number of total requests per day for a specific log type and time range.
+"""
 @methods.route('/method2', methods=['GET'])
 def getMethod2():
 
@@ -82,13 +91,19 @@ def getMethod2():
         }
     ])
 
-    return '<pre>' + dumps(result,indent=2) + '</pre>'
+    return dumps(result)
 
+"""
+3. Find the three most common logs per source IP for a specific day.
+"""
 @methods.route('/method3', methods=['GET'])
 def getMethod3():
+    
+    # get query params
     day = request.args.get('day')
     day = datetime.strptime(day, '%Y-%m-%d')
     day = day.strftime("%Y-%m-%d")
+
     result = mongo.db.log.aggregate(
         [
             {
@@ -138,8 +153,11 @@ def getMethod3():
         ], allowDiskUse=True
     )
 
-    return '<pre>' + dumps(result, indent=2) + '</pre>'
+    return dumps(result)
 
+"""
+4. Find the two least common HTTP methods with regards to a given time range.
+"""
 @methods.route('/method4', methods=['GET'])
 def getMethod4():
     
@@ -174,41 +192,47 @@ def getMethod4():
         }
     ])
 
-    return '<pre>' + dumps(result,indent=2) + '</pre>'
+    return dumps(result)
 
+"""
+5. Find the referers (if any) that have led to more than one resources.
+"""
 @methods.route('/method5', methods=['GET'])
 def getMethod5():
-    logCollection = mongo.db.log
-    result = logCollection.aggregate([
-    {
-        '$group': {
-            '_id': '$referer',
-            'count': {
-                '$sum': 1
-            },
-            'resources': {
-                '$addToSet': '$resource'
-            }
-        }
-    }, {
-        '$project': {
-            'referer': '$_id',
-            '_id': 0,
-            'size': {
-                '$size': '$resources'
-            }
-        }
-    }, {
-        '$match': {
-            'size': {
-                '$gt': 1
-            }
-        }
-    }
-])
 
-    return '<pre>' + dumps(result,indent=2) + '</pre>'
+    result = mongo.db.log.aggregate([
+        {
+            '$group': {
+                '_id': '$referer',
+                'count': {
+                    '$sum': 1
+                },
+                'resources': {
+                    '$addToSet': '$resource'
+                }
+            }
+        }, {
+            '$project': {
+                'referer': '$_id',
+                '_id': 0,
+                'size': {
+                    '$size': '$resources'
+                }
+            }
+        }, {
+            '$match': {
+                'size': {
+                    '$gt': 1
+                }
+            }
+        }
+    ])
 
+    return dumps(result)
+
+"""
+6. Find the blocks that have been replicated the same day that they have also been served.
+"""
 @methods.route('/method6', methods=['GET'])
 def getMethod6():
     
@@ -262,62 +286,104 @@ def getMethod6():
         }
     ])
 
-    return '<pre>' + dumps(result,indent=2) + '</pre>'
+    return dumps(result)
 
 
+"""
+7. Find the fifty most upvoted logs for a specific day.
+"""
 @methods.route('/method7', methods=['GET'])
 def getMethod7():
+
+    #get query params
     day = request.args.get('day')
+    
     day = datetime.strptime(day, '%Y-%m-%d')
-    day = day.strftime("%Y-%m-%d")
-    result = mongo.db.admin.aggregate([
+    nextDay = day + timedelta(days=1)
+
+    result = mongo.db.log.aggregate([
         {
-            '$unwind': {
-                'path': '$upvotes'
+            '$match': {
+                'log_timestamp': {
+                    '$gte': day,
+                    '$lt': nextDay
+                }
             }
-        }, {
+        } ,{
             '$lookup': {
-                'from': 'log',
-                'localField': 'upvotes',
-                'foreignField': '_id',
+                'from': 'admin',
+                'localField': '_id',
+                'foreignField': 'upvotes',
                 'as': 'string'
             }
-        },{
-            '$unwind': {
-                'path': '$string'
-            }
-        },{
-                '$project': {
-
-                    'day': {
-                        '$dateToString': {
-                            'format': '%Y-%m-%d',
-                            'date': '$string.log_timestamp'
-                        }
-                    },
-                    'upvote':'$string._id',
-                    'source_ip': '$string.source_ip',
-                }
-            }, {
-            '$match': {
-                'day': day
-            }
-        },{
-            "$group": {
-            "_id": "$upvote",
-            "count": { "$sum": 1 }
-            }
-        }, {
-            '$sort': {
-                'count': -1
-            }
-        }, {
-            '$limit': 50
         }
+        # , {
+        #     '$project': {
+        #         'total': {
+        #             '$size': '$string.upvotes'
+        #         }, 
+        #         '_id': '$_id'
+        #     } 
+        # } 
+        # ,{
+        #     '$sort': {
+        #         'total': -1
+        #     }
+        # }, {
+        #     '$limit': 50
+        # }
+
+        # Joey
+        # {
+        #     '$unwind': {
+        #         'path': '$upvotes'
+        #     }
+        # }, {
+        #     '$lookup': {
+        #         'from': 'log',
+        #         'localField': 'upvotes',
+        #         'foreignField': '_id',
+        #         'as': 'string'
+        #     }
+        # },{
+        #     '$unwind': {
+        #         'path': '$string'
+        #     }
+        # },{
+        #         '$project': {
+
+        #             'day': {
+        #                 '$dateToString': {
+        #                     'format': '%Y-%m-%d',
+        #                     'date': '$string.log_timestamp'
+        #                 }
+        #             },
+        #             'upvote':'$string._id',
+        #             'source_ip': '$string.source_ip',
+        #         }
+        #     }, {
+        #     '$match': {
+        #         'day': day
+        #     }
+        # },{
+        #     "$group": {
+        #     "_id": "$upvote",
+        #     "count": { "$sum": 1 }
+        #     }
+        # }, {
+        #     '$sort': {
+        #         'count': -1
+        #     }
+        # }, {
+        #     '$limit': 50
+        # }
     ])
 
-    return '<pre>' + dumps(result, indent=2) + '</pre>'
+    return dumps(result)
 
+"""
+8. Find the fifty most active administrators, with regard to the total number of upvotes.
+"""
 @methods.route('/method8', methods=['GET'])
 def getMethod8():
     
@@ -337,11 +403,15 @@ def getMethod8():
         }
     ])
 
-    return '<pre>' + dumps(result, indent=2) + '</pre>'
+    return dumps(result)
 
-
+"""
+9. Find the top fifty administrators, with regard to the total number of source IPs for which
+they have upvoted logs.
+"""
 @methods.route('/method9', methods=['GET'])
 def getMethod9():
+
     result = mongo.db.admin.aggregate([
         {
             '$unwind': {
@@ -372,24 +442,29 @@ def getMethod9():
         }, {
             '$limit': 50
         }
-    ])
-    return '<pre>' + dumps(result,indent=2) + '</pre>'
+    ], allowDiskUse=True)
+    
+    return dumps(result)
 
+"""
+10. Find all logs for which the same e-mail has been used for more than one usernames when
+casting an upvote.
+"""
 @methods.route('/method10', methods=['GET'])
 def getMethod10():
     
     result = mongo.db.admin.aggregate([
         {
             '$group': {
-                '_id': '$email',
+                '_id': '$email', 
                 'upvotes': {
                     '$push': '$upvotes'
-                },
+                }, 
                 'total': {
                     '$sum': 1
                 }
             }
-        }, {
+        } , {
             '$match': {
                 'total': {
                     '$gt': 2
@@ -410,11 +485,17 @@ def getMethod10():
         }
     ], allowDiskUse=True)
 
-    return '<pre>' + dumps(result, indent=2) + '</pre>'
+    return dumps(result)
 
+"""
+11. Find all the block ids for which a given name has casted a vote for a log involving it.
+"""
 @methods.route('/method11', methods=['GET'])
 def getMethod11():
+
+    # get query params
     username = request.args.get('name')
+    
     result = mongo.db.admin.aggregate([
         {
             '$match': {
@@ -449,4 +530,4 @@ def getMethod11():
             }
         }])
 
-    return '<pre>' + dumps(result, indent=2) + '</pre>'
+    return dumps(result)
