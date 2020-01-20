@@ -105,6 +105,7 @@ We present some sample snapshots without the use of indeces:
 ![alt text](api%20snapshots/method6.png "Query 6")
 
 - API Query 7
+![alt text](api%20snapshots/method7Index.png "Query 7")
 
 - API Query 8
 ![alt text](api%20snapshots/method8.png "Query 8")
@@ -116,6 +117,7 @@ We present some sample snapshots without the use of indeces:
 ![alt text](api%20snapshots/method10.png "Query 10")
 
 - API Query 11
+![alt text](api%20snapshots/method11.png "Query 11")
 
 - Insert Log Examples
 ![alt text](api%20snapshots/insert_access.png "Insert Access Log")
@@ -177,6 +179,13 @@ As we see from the snapshot following adding an index on type field gives a slig
 ![alt text](api%20snapshots/method4-noIndex.png "Index method 4")
 
 ## Upvote Index
+We also created an index for the upvote field of the admin collection which greatly increased query 7 execution speed
+
+- Index
+![alt text](api%20snapshots/method7Index.png "Index method 7")
+
+- No Index
+![alt text](api%20snapshots/method7noIndex.png "Index method 7")
 
 
 
