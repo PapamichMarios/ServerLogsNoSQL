@@ -146,7 +146,15 @@ def getMethod3():
                     '$push': {'count':'$count', 'type':'$type'}
                 }
             }
-        },{
+        },
+        {
+                '$match': {
+                    '_id': {
+                        '$ne':None
+                    }
+                }
+        },
+                {
             '$project':{'counts':{ '$slice':['$counts',3]}}
         }
 
