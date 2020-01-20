@@ -529,6 +529,12 @@ def getMethod11():
                 }
             }
         },{
+            '$match': {
+                'string.blocks': {
+                    '$ne': []
+                }
+            }
+        },{
             '$project':{
                 "_id":0,
                 'blocks':'$string.blocks'
