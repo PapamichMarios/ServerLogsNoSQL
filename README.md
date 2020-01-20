@@ -93,7 +93,7 @@ We present some sample snapshots without the use of indeces:
 ![alt text](api%20snapshots/method2-noIndex.png "Query 2")
 
 - API Query 3
-
+![alt text](api%20snapshots/method3.png "Query 3")
 
 - API Query 4
 ![alt text](api%20snapshots/method4-noIndex.png "Query 4")
