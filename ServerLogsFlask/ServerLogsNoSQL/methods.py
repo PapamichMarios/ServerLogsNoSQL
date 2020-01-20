@@ -297,19 +297,26 @@ def getMethod7():
 
     #get query params
     day = request.args.get('day')
-    
     day = datetime.strptime(day, '%Y-%m-%d')
-    nextDay = day + timedelta(days=1)
+    day = day.strftime("%Y-%m-%d")
+
 
     result = mongo.db.log.aggregate([
         {
-            '$match': {
-                'log_timestamp': {
-                    '$gte': day,
-                    '$lt': nextDay
-                }
+            '$project': {
+                'day': {
+                    '$dateToString': {
+                        'format': '%Y-%m-%d',
+                        'date': '$log_timestamp'
+                    }
+                },
             }
-        } ,{
+        },
+        {
+            '$match': {
+                'day': day
+            }
+        }, {
             '$lookup': {
                 'from': 'admin',
                 'localField': '_id',
@@ -317,23 +324,22 @@ def getMethod7():
                 'as': 'string'
             }
         }
-        # , {
-        #     '$project': {
-        #         'total': {
-        #             '$size': '$string.upvotes'
-        #         }, 
-        #         '_id': '$_id'
-        #     } 
-        # } 
-        # ,{
-        #     '$sort': {
-        #         'total': -1
-        #     }
-        # }, {
-        #     '$limit': 50
-        # }
+        , {
+           '$project': {
+                'total': {
+                     '$size': '$string'
+                },
+             }
+         }
+         ,{
+            '$sort': {
+                'total': -1
+             }
+         }, {
+             '$limit': 50
+         }])
 
-        # Joey
+        #
         # {
         #     '$unwind': {
         #         'path': '$upvotes'
@@ -377,7 +383,6 @@ def getMethod7():
         # }, {
         #     '$limit': 50
         # }
-    ])
 
     return dumps(result)
 
